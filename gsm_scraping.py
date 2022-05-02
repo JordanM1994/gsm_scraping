@@ -1,9 +1,12 @@
 # -------------------------------------- Imports -----------------------------------------------#
 import time
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium import webdriver
 import csv
+import re
+
 # -------------------------------------- User input for phone name -------------------------------------------#
 phone_chosen = input("What phone are you looking for? ").lower()
 phone_chosen_amended = phone_chosen.replace(" ", "_")
@@ -33,8 +36,24 @@ phone_link.click()
 time.sleep(3)
 
 # ------------------------ All config for devices ---------------------------------------------------#
-operating_system = driver.find_element(by=By.XPATH,
+release_year_data = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[2]/tbody/tr[2]/td[2]').text
+release_year = re.search('[0-9][0-9][0-9][0-9]', release_year_data)
+
+release_quarter_data = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[2]/tbody/tr[2]/td[2]').text.lower()
+
+if "january" or "february" or "march" in release_quarter_data:
+    release_quarter = 1
+elif "april" or "may" or "june" in release_quarter_data:
+    release_quarter = 2
+elif "july" or "august" or "september" in release_quarter_data:
+    release_quarter = 3
+elif "october" or "november" or "december" in release_quarter_data:
+    release_quarter = 4
+
+try: operating_system = driver.find_element(by=By.XPATH,
                                        value='//*[@id="specs-list"]/table[5]/tbody/tr[1]/td[2]').text.split(",")[0]
+except NoSuchElementException:
+    operating_system = ""
 
 if "Android" in driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[5]/tbody/tr[1]/td[2]').text:
     os = "android"
@@ -47,7 +66,9 @@ dimensions_uk = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/ta
 weight_uk = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[3]/tbody/tr[2]/td[2]').text.split("(")[0]
 
 dimensions_us = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[3]/tbody/tr[1]/td[2]').text.split("(")[1]
-weight_us = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[3]/tbody/tr[2]/td[2]').text.split("(")[1]
+
+weight_us_data = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[3]/tbody/tr[2]/td[2]').text
+weight_us = re.search('[0-9][.][0-9][0-9][ ][o][z]', weight_us_data)
 
 touchscreen = "Yes"
 screen_size = driver.find_element(by=By.XPATH,
@@ -69,6 +90,12 @@ for n in cameras:
     camera += f" {split[0]} +"
 
 video_recording = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[7]/tbody/tr[3]/td[2]').text.split(",")[0]
+video_recording_attribute_data = video_recording.split('@')[0].lower()
+if "k" in video_recording_attribute_data:
+    video_recording_attribute = int(video_recording_attribute_data[0])*1000
+else:
+    video_recording_attribute = int(video_recording_attribute_data.split("p")[0])
+
 flash_type = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[7]/tbody/tr[2]/td[2]').text.split(",")[0]
 
 
@@ -95,9 +122,29 @@ for storage in internal_storage_data:
         internal_storage += f"{split}/"
 
 
-no_of_cores = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[5]/tbody/tr[3]/td[2]').text.split("(")[0]
+try:
+    no_of_cores = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[5]/tbody/tr[3]/td[2]').text.split("(")[0]
+except NoSuchElementException:
+    no_of_cores = ""
+
 processor = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[5]/tbody/tr[2]/td[2]').text.split("(")[0]
-processor_speed = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[5]/tbody/tr[3]/td[2]').text.split("(")[1].split(")")[0]
+
+try:
+    processor_speed_data = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[5]/tbody/tr[3]/td[2]').text.split("\n")
+except NoSuchElementException:
+    processor_speed_data = ""
+
+if processor_speed_data == "":
+    processor_speed = ""
+else:
+    processor_speed_list = re.findall('[0-9][x][0-9][.][0-9]*', processor_speed_data[0])
+    processor_speed = ""
+    for n in range(len(processor_speed_list)):
+        if n+1 == len(processor_speed_list):
+            processor_speed += f"{processor_speed_list[n]} GHz"
+        else:
+            processor_speed += f"{processor_speed_list[n]} x "
+
 memory_card = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[6]/tbody/tr[1]/td[2]').text
 sim_card = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[3]/tbody/tr[4]/td[2]').text
 if "Nano" in sim_card:
@@ -149,7 +196,9 @@ if "hotspot" in hotspot:
 else:
     hotspot ="No"
 other = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[10]/tbody/tr[4]/td[2]').text
-battery = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[12]/tbody/tr[1]/td[2]').text.split(",")[0]
+
+battery_data = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[12]/tbody/tr[1]/td[2]').text
+battery = re.search(r'\b\d+\b', battery_data)
 
 headers = [
     "phone_chosen",
@@ -210,14 +259,14 @@ device_configuration_uk = [
     bluetooth,
     hotspot,
     other,
-    battery,
+    f"{battery.group()} mAh",
 ]
 
 device_configuration_us = [
     phone_chosen,
     operating_system,
     dimensions_us[:-1],
-    weight_us[:-1],
+    weight_us.group(),
     touchscreen,
     screen_size,
     resolution,
@@ -241,7 +290,7 @@ device_configuration_us = [
     bluetooth,
     hotspot,
     other,
-    battery,
+    f"{battery.group()} mAh",
 ]
 
 attribute_model_handset = [
@@ -257,13 +306,13 @@ attribute_model_handset = [
     float(camera.split(" ")[1]),
     1,
     float(front_camera[:-2]),
-    "",
-    "",
-    "",
+    video_recording_attribute,
+    release_quarter,
+    int(release_year.group()),
     ""
 ]
 
-complete_config = [device_configuration_us, device_configuration_uk, attribute_model_handset]
+complete_config = [device_configuration_uk, device_configuration_us, attribute_model_handset]
 
 with open("handset_data.csv", "w") as document:
     write = csv.writer(document)
