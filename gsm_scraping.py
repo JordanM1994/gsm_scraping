@@ -6,6 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium import webdriver
 import csv
 import re
+
 # -------------------------------------- User input for phone name -------------------------------------------#
 phone_chosen = input("What phone are you looking for? ").lower()
 phone_chosen_amended = phone_chosen.replace(" ", "_")
@@ -35,7 +36,6 @@ phone_link.click()
 time.sleep(3)
 
 # ------------------------ All config for devices ---------------------------------------------------#
-
 release_year_data = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[2]/tbody/tr[2]/td[2]').text
 release_year = re.search('[0-9][0-9][0-9][0-9]', release_year_data)
 
@@ -66,6 +66,7 @@ dimensions_uk = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/ta
 weight_uk = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[3]/tbody/tr[2]/td[2]').text.split("(")[0]
 
 dimensions_us = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[3]/tbody/tr[1]/td[2]').text.split("(")[1]
+
 weight_us_data = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[3]/tbody/tr[2]/td[2]').text
 weight_us = re.search('[0-9][.][0-9][0-9][ ][o][z]', weight_us_data)
 
