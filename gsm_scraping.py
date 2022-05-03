@@ -12,6 +12,7 @@ import re
 
 phone_chosen = input("What phone are you looking for? ").lower()
 phone_chosen_amended = phone_chosen.replace(" ", "_")
+phone_model_key = phone_chosen.replace(" ", "-").upper()
 
 url = "https://www.gsmarena.com/"
 
@@ -23,6 +24,7 @@ driver = webdriver.Chrome(executable_path=chrome_driver_path)
 driver.get(url)
 time.sleep(3)
 
+# If a popup appears that requests you to accept cookies, this will accept, if it doesn't appear this step will skip.
 try:
     agree = driver.find_element(by=By.XPATH, value='//*[@id="unic-b"]/div/div/div/div[3]/div[1]/button[2]')
     agree.click()
@@ -31,13 +33,20 @@ except NoSuchElementException:
 
 time.sleep(2)
 
+# Finds the search bar
 search = driver.find_element(by=By.XPATH, value='//*[@id="topsearch-text"]')
 search.send_keys(phone_chosen)
 search.send_keys(Keys.ENTER)
 
 time.sleep(3)
-phone_link = driver.find_element(by=By.CSS_SELECTOR, value=f"a[href*={phone_chosen_amended}]")
-phone_link.click()
+
+try:
+    phone_link = driver.find_element(by=By.CSS_SELECTOR, value=f"a[href*={phone_chosen_amended}-]")
+    phone_link.click()
+except NoSuchElementException:
+    phone_link = driver.find_element(by=By.CSS_SELECTOR, value=f"a[href*={phone_chosen_amended}]")
+    phone_link.click()
+
 
 time.sleep(3)
 
@@ -341,6 +350,7 @@ battery = re.search(r'\b\d+\b', battery_data)
 # -------------------------------------- Headers of CSV  -------------------------------------------------------------#
 
 headers = [
+    "model_key",
     "phone_chosen",
     "operating_system",
     "dimensions",
@@ -377,6 +387,7 @@ headers = [
 # -------------------------------------- UK Device Config -------------------------------------------------------------#
 
 device_configuration_uk = [
+    phone_model_key,
     phone_chosen,
     operating_system,
     dimensions_uk,
@@ -413,6 +424,7 @@ device_configuration_uk = [
 # -------------------------------------- US Device Config -------------------------------------------------------------#
 
 device_configuration_us = [
+    phone_model_key,
     phone_chosen,
     operating_system,
     dimensions_us[:-1],
