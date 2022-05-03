@@ -1,4 +1,5 @@
 # -------------------------------------- Imports -----------------------------------------------#
+
 import time
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
@@ -6,7 +7,9 @@ from selenium.webdriver.common.by import By
 from selenium import webdriver
 import csv
 import re
+
 # -------------------------------------- User input for phone name -------------------------------------------#
+
 phone_chosen = input("What phone are you looking for? ").lower()
 phone_chosen_amended = phone_chosen.replace(" ", "_")
 
@@ -16,11 +19,15 @@ chrome_driver_path = "/Users/jordanmcleod/Development/chromedriver"
 driver = webdriver.Chrome(executable_path=chrome_driver_path)
 
 # -------------------------------------- Finding device page -----------------------------------------------#
+
 driver.get(url)
 time.sleep(3)
 
-agree = driver.find_element(by=By.XPATH, value='//*[@id="unic-b"]/div/div/div/div[3]/div[1]/button[2]')
-agree.click()
+try:
+    agree = driver.find_element(by=By.XPATH, value='//*[@id="unic-b"]/div/div/div/div[3]/div[1]/button[2]')
+    agree.click()
+except NoSuchElementException:
+    pass
 
 time.sleep(2)
 
@@ -36,6 +43,8 @@ time.sleep(3)
 
 # ------------------------ All config for devices ---------------------------------------------------#
 
+# -------------------------------------- Release Year and Quarter -----------------------------------------------#
+
 release_year_data = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[2]/tbody/tr[2]/td[2]').text
 release_year = re.search('[0-9][0-9][0-9][0-9]', release_year_data)
 
@@ -50,53 +59,84 @@ elif "july" or "august" or "september" in release_quarter_data:
 elif "october" or "november" or "december" in release_quarter_data:
     release_quarter = 4
 
-try: operating_system = driver.find_element(by=By.XPATH,
-                                       value='//*[@id="specs-list"]/table[5]/tbody/tr[1]/td[2]').text.split(",")[0]
+# -------------------------------------- Operating System -----------------------------------------------#
+
+# Try - allows script to run if the OS section cannot be found on the page
+try:
+    operating_system_data = driver.find_element(by=By.XPATH,
+                                       value='//*[@id="specs-list"]/table[5]/tbody/tr[1]/td[2]').text
+
+    operating_system = operating_system_data.split(",")[0]
+
+    # if statement changes amends the text to be lowercase for the Attribute Model
+    if "Android" in operating_system_data:
+        os = "android"
+    elif "iOS" in operating_system_data:
+        os = "apple_ios"
+    else:
+        os = operating_system_data.split(",")[0].lower()
+
+# If the OS cannot be found on GSM Arena the field is set to ""
 except NoSuchElementException:
     operating_system = ""
+    os = ""
 
-if "Android" in driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[5]/tbody/tr[1]/td[2]').text:
-    os = "android"
-elif "iOS" in driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[5]/tbody/tr[1]/td[2]').text:
-    os = "apple_ios"
-else:
-    os = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[5]/tbody/tr[1]/td[2]').text.split(",")[0]
+# -------------------------------------- UK/US Dimensions and weight -----------------------------------------------#
 
-dimensions_uk = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[3]/tbody/tr[1]/td[2]').text.split("(")[0]
-weight_uk = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[3]/tbody/tr[2]/td[2]').text.split("(")[0]
+dimensions_data = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[3]/tbody/tr[1]/td[2]').text
+weight_data = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[3]/tbody/tr[2]/td[2]').text
 
-dimensions_us = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[3]/tbody/tr[1]/td[2]').text.split("(")[1]
-weight_us_data = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[3]/tbody/tr[2]/td[2]').text
-weight_us = re.search('[0-9][.][0-9][0-9][ ][o][z]', weight_us_data)
+# captures the measurements in mm and the weight in grams
+dimensions_uk = dimensions_data.split("(")[0]
+weight_uk = weight_data.split("(")[0]
 
+# captures the measurements in inches and the weight in oz
+dimensions_us = dimensions_data.split("(")[1]
+weight_us = re.search('[0-9][.][0-9][0-9][ ][o][z]', weight_data)
+
+# ------------------------------------------------ Touchscreen --------------------------------------------------------#
+
+# Hard coded yes as almost all new phones are touchscreen
 touchscreen = "Yes"
+
+# -------------------------------------- Screen, Screen Size and resolution -------------------------------------------#
+
 screen_size = driver.find_element(by=By.XPATH,
                                   value='//*[@id="specs-list"]/table[4]/tbody/tr[2]/td[2]').text.replace(" inches", '"').split(",")[0]
 
-if "," in driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[4]/tbody/tr[3]/td[2]').text:
-    resolution = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[4]/tbody/tr[3]/td[2]').text.split(",")[0]
+# Catches the times when there is more than sentence in the resolution data
+resolution_data = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[4]/tbody/tr[3]/td[2]').text
+if "," in resolution_data:
+    resolution = resolution_data.split(",")[0]
 else:
-    resolution = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[4]/tbody/tr[3]/td[2]').text.split(" (")[0]
+    resolution = resolution_data.split(" (")[0]
 
 
 display_type = driver.find_element(by=By.XPATH,
                                    value='//*[@id="specs-list"]/table[4]/tbody/tr[1]/td[2]').text.split(",")[0]
 ppi = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[4]/tbody/tr[3]/td[2]').text.split("~")[1].replace(" density)", '')
+
+# -------------------------------------- Rear Cameras  -------------------------------------------#
+
+# Gathers the number of cameras i.e Single, Double, Triple or Quadruple
+
 camera = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[7]/tbody/tr[1]/td[1]/a').text
-cameras = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[7]/tbody/tr[1]/td[2]').text.split("\n")
-for n in cameras:
+
+# Gets the number of MP per camera and adds them to the camera section above
+
+camera_data = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[7]/tbody/tr[1]/td[2]').text.split("\n")
+for n in camera_data:
     split = n.split(",")
     camera += f" {split[0]} +"
 
-video_recording = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[7]/tbody/tr[3]/td[2]').text.split(",")[0]
-video_recording_attribute_data = video_recording.split('@')[0].lower()
-if "k" in video_recording_attribute_data:
-    video_recording_attribute = int(video_recording_attribute_data[0])*1000
-else:
-    video_recording_attribute = int(video_recording_attribute_data.split("p")[0])
+# Gets information on the flash type i.e LED Flash or Dual LED Flash
 
 flash_type = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[7]/tbody/tr[2]/td[2]').text.split(",")[0]
 
+# -------------------------------------- Front Cameras  -------------------------------------------#
+
+# When the front camera is a single camera it will only display the MP of the camera, if there are dual or more this
+# will output the number of cameras and the MP
 
 if driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[8]/tbody/tr[1]/td[1]/a').text == "Single":
     front_camera = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[8]/tbody/tr[1]/td[2]').text.split(",")[0]
@@ -107,7 +147,25 @@ else:
         split = cam.split(",")
         front_camera += f" {split[0]} +"
 
+# -------------------------------------- Video Recording  -------------------------------------------#
+
+# Gets information on the video recoding for the all handset database
+
+video_recording = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[7]/tbody/tr[3]/td[2]').text.split(",")[0]
+
+# Gets numerical data on the video recoding for the attribute model
+
+video_recording_attribute_data = video_recording.split('@')[0].lower()
+if "k" in video_recording_attribute_data:
+    video_recording_attribute = int(video_recording_attribute_data[0])*1000
+else:
+    video_recording_attribute = int(video_recording_attribute_data.split("p")[0])
+
+# -------------------------------------- Internal Storage  -------------------------------------------#
+
 internal_storage = ""
+
+# collects the various storage amounts and formats them like so: xxxGB/xxxGB/xxxTB
 
 internal_storage_data = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[6]/tbody/tr[2]/td[2]').text.split(",")
 for storage in internal_storage_data:
@@ -120,6 +178,10 @@ for storage in internal_storage_data:
     else:
         internal_storage += f"{split}/"
 
+# -------------------------------------- Cores and processor speeds ---------------------------------------------------#
+
+# Try - allows script to run if the OS section cannot be found on the page, if the no_of_cores cannot be found it will
+# set the value at ""
 
 try:
     no_of_cores = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[5]/tbody/tr[3]/td[2]').text.split("(")[0]
@@ -127,6 +189,9 @@ except NoSuchElementException:
     no_of_cores = ""
 
 processor = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[5]/tbody/tr[2]/td[2]').text.split("(")[0]
+
+# The below tries to find the processor speed elements, if it can't, it simply sets to ""
+# If it can find data it then formats the response to the following - XxX.XX x XxX.XX GHz
 
 try:
     processor_speed_data = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[5]/tbody/tr[3]/td[2]').text.split("\n")
@@ -144,14 +209,34 @@ else:
         else:
             processor_speed += f"{processor_speed_list[n]} x "
 
+# -------------------------------------- Memory Cards and Sim Cards ---------------------------------------------------#
+
+
 memory_card = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[6]/tbody/tr[1]/td[2]').text
-sim_card = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[3]/tbody/tr[4]/td[2]').text
-if "Nano" in sim_card:
-    sim_card = "Nano"
-elif "micro" in sim_card:
-    sim_card = "Micro"
-else:
-    sim_card = "Standard"
+
+# The position of the Sim card data can change so this tries the first location and if there is nothing there it moves
+# to the next location.
+
+try:
+    sim_card = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[3]/tbody/tr[4]/td[2]').text
+    if "Nano" in sim_card:
+        sim_card = "Nano"
+    elif "micro" in sim_card:
+        sim_card = "Micro"
+    else:
+        sim_card = "Standard"
+except NoSuchElementException:
+    sim_card = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[3]/tbody/tr[3]/td[2]').text
+    if "Nano" in sim_card:
+        sim_card = "Nano"
+    elif "micro" in sim_card:
+        sim_card = "Micro"
+    else:
+        sim_card = "Standard"
+
+# -------------------------------------- RAM  -------------------------------------------------------------#
+
+# collects the various RAM amounts and formats them like so: xxxGB/xxxGB
 
 ram = ""
 ram_data = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[6]/tbody/tr[2]/td[2]').text.split(",")
@@ -165,17 +250,26 @@ for rams in ram_data:
     else:
         ram += f"{split}/"
 
+# -------------------------------------- Positioning  -------------------------------------------------------------#
 
 positioning = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[10]/tbody/tr[3]/td[2]').text.split("with ")[1]
-if "Unspecified" in driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[10]/tbody/tr[5]/td[2]').text:
+
+# -------------------------------------- Radio  -------------------------------------------------------------#
+radio_data = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[10]/tbody/tr[5]/td[2]').text
+if "Unspecified" in radio_data:
     radio = "No"
 else:
-    radio = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[10]/tbody/tr[5]/td[2]').text
+    radio = radio_data
+
+# -------------------------------------- Internet  -------------------------------------------------------------#
+
 internet = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[10]/tbody/tr[1]/td[2]').text
 if "Wi-Fi" in internet:
     internet = "Yes"
 else:
     internet ="No"
+
+# -------------------------------------- WiFi  -------------------------------------------------------------#
 
 wifi = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[10]/tbody/tr[1]/td[2]').text
 if "Wi-Fi" in wifi:
@@ -183,21 +277,37 @@ if "Wi-Fi" in wifi:
 else:
     wifi ="No"
 
+# -------------------------------------- Bluetooth  -------------------------------------------------------------#
+
 bluetooth = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[10]/tbody/tr[2]/td[2]').text
 if bluetooth == "No":
     bluetooth = "No"
 else:
     bluetooth ="Yes"
 
+# -------------------------------------- Hotspot  -------------------------------------------------------------#
+
 hotspot = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[10]/tbody/tr[1]/td[2]').text
 if "hotspot" in hotspot:
     hotspot = "Yes"
 else:
     hotspot ="No"
-other = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[10]/tbody/tr[4]/td[2]').text
+
+# -------------------------------------- NFC  -------------------------------------------------------------#
+
+if "yes" in driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[10]/tbody/tr[4]/td[2]').text.lower():
+    other = "NFC"
+else:
+    other = ""
+
+# -------------------------------------- Battery  -------------------------------------------------------------#
 
 battery_data = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[12]/tbody/tr[1]/td[2]').text
 battery = re.search(r'\b\d+\b', battery_data)
+
+# -------------------------------------- CSV Export of data collected -------------------------------------------------#
+
+# -------------------------------------- Headers of CSV  -------------------------------------------------------------#
 
 headers = [
     "phone_chosen",
@@ -228,7 +338,12 @@ headers = [
     "hotspot",
     "other",
     "battery",
+    "standbytime",
+    "talktime",
+    "apps",
 ]
+
+# -------------------------------------- UK Device Config -------------------------------------------------------------#
 
 device_configuration_uk = [
     phone_chosen,
@@ -259,7 +374,12 @@ device_configuration_uk = [
     hotspot,
     other,
     f"{battery.group()} mAh",
+    "",
+    "",
+    "Yes"
 ]
+
+# -------------------------------------- US Device Config -------------------------------------------------------------#
 
 device_configuration_us = [
     phone_chosen,
@@ -290,12 +410,17 @@ device_configuration_us = [
     hotspot,
     other,
     f"{battery.group()} mAh",
+    "",
+    "",
+    "Yes",
 ]
+
+# --------------------------------- Attribute Model Hanset Data-------------------------------------------------------#
 
 attribute_model_handset = [
     phone_chosen,
     phone_chosen.split(" ")[0],
-    os.lower(),
+    os,
     "touchscreen",
     "",
     float(dimensions_uk.split(" ")[0]),
@@ -311,7 +436,11 @@ attribute_model_handset = [
     ""
 ]
 
+# --------------------------------- Complete config list -------------------------------------------------------#
+
 complete_config = [device_configuration_uk, device_configuration_us, attribute_model_handset]
+
+# --------------------------------- Add data to CSV -------------------------------------------------------#
 
 with open("handset_data.csv", "w") as document:
     write = csv.writer(document)
