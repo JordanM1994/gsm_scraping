@@ -63,6 +63,7 @@ else:
 
 # -------------------------------------- Release Year and Quarter -----------------------------------------------#
 
+
 release_year_data = driver.find_element(by=By.XPATH, value='//*[@id="specs-list"]/table[2]/tbody/tr[2]/td[2]').text
 release_year = re.search('[0-9][0-9][0-9][0-9]', release_year_data)
 
@@ -130,7 +131,6 @@ except IndexError:
     dimensions_us = ""
 
 weight_us = re.search('[0-9][.][0-9][0-9][ ][o][z]', weight_data)
-
 
 # ------------------------------------------------ Water resistance ---------------------------------------------------#
 # Catches the values of the Water resistance, if ip is in the text it will gather the data and format like : ipXX

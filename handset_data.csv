@@ -1,6 +1,5 @@
 model_key,phone_chosen,operating_system,dimensions,weight,touchscreen,screen_size,resolution,ppi,display_type,camera,video_recording,flash_type,front_camera,internal_storage,no_of_cores,processor,processor_speed,memory_card,sim_card,ram,positioning,radio,internet,wifi,bluetooth,hotspot,other,battery,standbytime,talktime,apps
-MICROSOFT-SURFACE-DUO-2,microsoft surface duo 2,Android ,"184.5 x 145.2 x 5.5 mm
-Folded: 145.2 x 92.1 x 11 mm",284 g ,Yes,"8.3""",1892 x 2688 pixels,401 ppi,AMOLED,Triple 12 MP + 12 MP + 16 MP + TOF 3D,4K@30/60fps,Dual-LED dual-tone flash,12 MP,128GB/256GB/512GB,Octa-core ,Qualcomm SM8350 Snapdragon 888 5G ,1x2.84 x 3x2.42 x 4x1.80 GHz,No,Nano,8GB,"A-GPS, GLONASS, GALILEO, QZSS, BDS",No,Yes,Yes,Yes,Yes,NFC,4449 mAh,,,Yes
-MICROSOFT-SURFACE-DUO-2,microsoft surface duo 2,Android ,,0.02 oz,Yes,"8.3""",1892 x 2688 pixels,401 ppi,AMOLED,Triple 12 MP + 12 MP + 16 MP + TOF 3D,4K@30/60fps,Dual-LED dual-tone flash,12 MP,128GB/256GB/512GB,Octa-core ,Qualcomm SM8350 Snapdragon 888 5G ,1x2.84 x 3x2.42 x 4x1.80 GHz,No,Nano,8GB,"A-GPS, GLONASS, GALILEO, QZSS, BDS",No,Yes,Yes,Yes,Yes,NFC,4449 mAh,,,Yes
-microsoft surface duo 2,microsoft,android,touchscreen,,184.5,145.2,8.3,401,12.0,1,12.0,4000,4,2021,
-microsoft surface duo 2,0,,,,,,,0,1,,,,,,,0,1,,1.4,1,AMOLED,,1
+SAMSUNG-GALAXY-S22-5G,samsung galaxy s22 5g,Android ,146 x 70.6 x 7.6 mm ,167 g / 168 g ,Yes,"6.1""",1080 x 2340 pixels,425 ppi,Dynamic AMOLED 2X,Triple 50 MP + 10 MP + 12 MP,8K@24fps,LED flash,10 MP,128GB/256GB,Octa-core ,Exynos 2200 ,1x2.8 x 3x2.50 x 4x1.8 GHz,No,Nano,8GB,"A-GPS, GLONASS, BDS, GALILEO",No,Yes,Yes,Yes,Yes,NFC,3700 mAh,,,Yes
+SAMSUNG-GALAXY-S22-5G,samsung galaxy s22 5g,Android ,5.75 x 2.78 x 0.30 in,5.89 oz,Yes,"6.1""",1080 x 2340 pixels,425 ppi,Dynamic AMOLED 2X,Triple 50 MP + 10 MP + 12 MP,8K@24fps,LED flash,10 MP,128GB/256GB,Octa-core ,Exynos 2200 ,1x2.8 x 3x2.50 x 4x1.8 GHz,No,Nano,8GB,"A-GPS, GLONASS, BDS, GALILEO",No,Yes,Yes,Yes,Yes,NFC,3700 mAh,,,Yes
+samsung galaxy s22 5g,samsung,android,touchscreen,,146.0,70.6,6.1,425,50.0,1,10.0,8000,1,2022,
+samsung galaxy s22 5g,0,,,,,,,1,1,,,,,,,0,1,,1.0,1,Dynamic AMOLED 2X,,1
